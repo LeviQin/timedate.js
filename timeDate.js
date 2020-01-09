@@ -1,7 +1,7 @@
 /**
 *@Name: 日期时间各种计算转换
 *@Author  biaoqin(1019613129@qq.com)
-*@GitHub  ---
+*@GitHub  https://github.com/muqin6610/timeDate/edit/master/timeDate.js
 *@Version 1.0
 *@计算两个时间之间的时间差: getHour(s1, s2)
 *@时间转化为秒数: transitionToSeconds(T)
@@ -170,6 +170,8 @@
           break;
         case 7:
           return '星期日'
+          break;
+        default:
           break;
       }
     }
