@@ -57,7 +57,7 @@
       let minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()
       let seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()
       return {
-        ymdhms: year + "- "+ month + "-" + day + " " + hours + ":" + minutes + ":" + seconds,
+        ymdhms: year + "-"+ month + "-" + day + " " + hours + ":" + minutes + ":" + seconds,
         ymdhm: year + "-" + month + "-" + day + " " + hours + ":" + minutes,
         ymd: year + "-" + month + "-" + day,
         md: month + "-" + day,
