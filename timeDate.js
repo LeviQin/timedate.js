@@ -1,6 +1,6 @@
 /**
 *@Name: 提供各种日期和时间的计算转换，纯原生不依赖任何第三方
-*@Author  biaoqin(1019613129@qq.com)
+*@Author  QinBiao(qinbiao_web@163.com)
 *@GitHub  https://github.com/muqin6610/timeDate/edit/master/timeDate.js
 *@Version 2.0 版本更新，具体内容请查看文档
  */
@@ -113,10 +113,4 @@ export const timeDate = {
             hours: hours,
             hoursCN: hours + '小时',
             minutes: minutes,
-            minutesCN: minutes + '分钟',
-            seconds: seconds,
-            secondsCN: seconds + '秒',
-            milliseconds: milliseconds
-        }
-    }
-}
+            minutes
