@@ -15,13 +15,13 @@
 #### Vue使用
 + 引入到man.js（全局引入）, 使用时需要加this, 如：this.timeDate.getHour()
 ```js 
-import { timeDate } from './util/timeDate'
+import timeDate from './util/timeDate'
 // 注册到vue原型上
 Vue.prototype.timeDate = timeDate
 ```
 + 引入具体组件（局部引入）, 使用时无需加this, 如：timeDate.getHour()
 ```js 
-import { timeDate } from '@/util/timeDate'
+import timeDate from '@/util/timeDate'
 ```
 
 
