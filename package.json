@@ -1,0 +1,8 @@
+{
+    "name": "timedate.js",
+    "version": "1.0.1",
+    "description": "提供各种日期时间计算和转换的js插件",
+    "repository": "https://github.com/muqin6610/timeDate/edit/master/timeDate.js",
+    "main": "index.js",
+    "keywords": ["time", "date", "日期", "时间", "format", "格式化", "年月日", "时分秒"]
+}

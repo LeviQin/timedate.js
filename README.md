@@ -1,4 +1,4 @@
-## timeDate.js
+## timedate.js
 提供各种日期时间计算和转换的js插件
 
 ## 功能介绍
@@ -12,16 +12,9 @@
 
 ## 使用
 
-#### Vue使用
-+ 引入到man.js（全局引入）, 使用时需要加this, 如：this.timeDate.getHour()
+#### 导入
 ```js 
-import timeDate from './util/timeDate'
-// 注册到vue原型上
-Vue.prototype.timeDate = timeDate
-```
-+ 引入具体组件（局部引入）, 使用时无需加this, 如：timeDate.getHour()
-```js 
-import timeDate from '@/util/timeDate'
+import timedate from 'timedate'
 ```
 
 
@@ -31,36 +24,36 @@ import timeDate from '@/util/timeDate'
 ```js 
 let date1 = '2019-12-30 14:00:00' // *值不能为纯日期, 比如：2019-12-30
 let date2 = '2020-01-01 14:00:00 ' // *值不能为纯日期, 比如：2020-01-01
-timeDate.getHour(date1, date2) // 得到相差的小时数
+timedate.getHour(date1, date2) // 得到相差的小时数
 ```
 
 + 获取一个时间的总秒数, transitionToSeconds
 ```js
 let time = '16:00:00' // *值不能为纯日期, 比如：2019-12-30
-timeDate.transitionToSeconds(time) // 得到总的秒数
+timedate.transitionToSeconds(time) // 得到总的秒数
 ```
 
 + 日期格式化, dateFormat
 ```js
 let date = new Date() // 值不能为纯时间，比如：10：45：30
-timeDate.dateFormat(date) // 得到一个对象,对象里包含yyyy-mm-dd hh:mm:ss & yyyy年mm月dd日 hh:mm:ss & yyyy-mm-dd hh:mm & yyyy-mm-dd & mm-dd & hh:mm:ss & h:m & yyyy年mm月dd日 & mm月dd日
+timedate.dateFormat(date) // 得到一个对象,对象里包含yyyy-mm-dd hh:mm:ss & yyyy年mm月dd日 hh:mm:ss & yyyy-mm-dd hh:mm & yyyy-mm-dd & mm-dd & hh:mm:ss & h:m & yyyy年mm月dd日 & mm月dd日
 ```
 
 + 日期去除时分秒, removeHMS
 ```js
 let date = '2020-01-01 16:00:00'
-timeDate.removeHMS(date) // 得到'2020-01-01'
+timedate.removeHMS(date) // 得到'2020-01-01'
 ```
 
 + 返回两个日期相差的天数, dateDiff
 ```js
 let date1 = '2019-12-13' // 值不能为纯时间，比如：10：45：30
 let date2 = '2019-12-15' // 值不能为纯时间，比如：10：45：30
-timeDate.dateDiff(date1, date2) // 得到一个对象,对象里包含两个属性: days(不含今天,如:2019-12-13到2019-12-15,相差两天)和daysCA(包含今天,如:2019-12-13到2019-12-15,相差三天天)
+timedate.dateDiff(date1, date2) // 得到一个对象,对象里包含两个属性: days(不含今天,如:2019-12-13到2019-12-15,相差两天)和daysCA(包含今天,如:2019-12-13到2019-12-15,相差三天天)
 ```
 
 + 获取一个日期的所有信息, getFormat
 ```js
 let date = new Date()
-timeDate.getFormat(date) // 得到一个对象,对象里包含:年,月,日,时,分,秒,星期,时间戳,当前毫秒数
+timedate.getFormat(date) // 得到一个对象,对象里包含:年,月,日,时,分,秒,星期,时间戳,当前毫秒数
 ```
