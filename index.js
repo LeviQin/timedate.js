@@ -48,6 +48,9 @@ export default {
      */
     dateFormat: (s1) => {
         let date = new Date(s1)
+        if (isNaN(date.getTime())) {
+            return s1;
+        }
         let year = date.getFullYear()
         // 日期格式中月份是从0开始因此要加上1
         let month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
