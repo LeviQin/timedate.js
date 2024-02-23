@@ -22,7 +22,7 @@ yarn add timedate.js
 
 #### 导入
 ```js 
-import timedate from 'timedate'
+import timedate from 'timedate.js'
 ```
 
 
