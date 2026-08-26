@@ -10,7 +10,8 @@ export function isLeapYear(year: number): boolean {
 
 /** 某年某月的天数，month 为 1-12 */
 export function daysInMonth(year: number, month: number): number {
-  return new Date(year, month, 0).getDate();
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return 0;
+  return [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1] ?? 0;
 }
 
 /** 获取季度（1-4） */
@@ -21,19 +22,28 @@ export function getQuarter(input: DateInput): number {
 /** 一年中的第几天（1-366） */
 export function getDayOfYear(input: DateInput): number {
   const d = toDate(input);
-  const start = new Date(d.getFullYear(), 0, 0).getTime();
-  return Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() - start) / 86_400_000);
+  if (Number.isNaN(d.getTime())) return NaN;
+  const start = createUTCDate(d.getFullYear(), 0, 1).getTime();
+  const current = createUTCDate(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  return Math.round((current - start) / 86_400_000) + 1;
 }
 
 /** ISO 8601 周数（1-53），基于 ISO 周四法则 */
 export function getISOWeek(input: DateInput): number {
   const d = toDate(input);
-  const day = (d.getDay() + 6) % 7; // 周一 = 0
-  const thursday = new Date(d);
-  thursday.setDate(d.getDate() - day + 3);
-  const firstThursday = new Date(thursday.getFullYear(), 0, 4);
-  firstThursday.setDate(firstThursday.getDate() - (((firstThursday.getDay() + 6) % 7)) + 3);
-  return 1 + Math.round((thursday.getTime() - firstThursday.getTime()) / 604_800_000);
+  if (Number.isNaN(d.getTime())) return NaN;
+  const utcDate = createUTCDate(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = utcDate.getUTCDay() || 7; // 周一 = 1
+  utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
+  const yearStart = createUTCDate(utcDate.getUTCFullYear(), 0, 1).getTime();
+  return Math.ceil(((utcDate.getTime() - yearStart) / 86_400_000 + 1) / 7);
+}
+
+function createUTCDate(year: number, month: number, day: number): Date {
+  const date = new Date(0);
+  date.setUTCFullYear(year, month, day);
+  date.setUTCHours(0, 0, 0, 0);
+  return date;
 }
 
 /**
@@ -44,16 +54,26 @@ export function getISOWeek(input: DateInput): number {
  * @param weekStart 每周起始日，0 = 周日，1 = 周一，默认 1
  */
 export function getMonthGrid(year: number, month: number, weekStart: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1): Date[][] {
-  const first = new Date(year, month - 1, 1);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+    throw new RangeError('month must be an integer between 1 and 12');
+  }
+  const first = createLocalDate(year, month - 1, 1);
   const offset = (first.getDay() - weekStart + 7) % 7;
-  const start = new Date(year, month - 1, 1 - offset);
+  const start = createLocalDate(year, month - 1, 1 - offset);
   const weeks: Date[][] = [];
   for (let i = 0; i < 6; i++) {
     const row: Date[] = [];
     for (let j = 0; j < 7; j++) {
-      row.push(new Date(start.getFullYear(), start.getMonth(), start.getDate() + i * 7 + j));
+      row.push(createLocalDate(start.getFullYear(), start.getMonth(), start.getDate() + i * 7 + j));
     }
     weeks.push(row);
   }
   return weeks;
+}
+
+function createLocalDate(year: number, month: number, day: number): Date {
+  const date = new Date(0);
+  date.setFullYear(year, month, day);
+  date.setHours(0, 0, 0, 0);
+  return date;
 }

@@ -5,6 +5,14 @@
 /** 可接受的日期输入类型 */
 export type DateInput = Date | string | number | null | undefined;
 
+/** 解析时使用的当前时间来源与空值策略 */
+export interface ParseOptions {
+  /** 为相对量、纯时间和空值解析提供可控的当前时间 */
+  now?: Date | (() => Date);
+  /** 默认保持 v3 行为：空值解析为当前时间 */
+  empty?: 'now' | 'invalid';
+}
+
 /** 差值单位 */
 export type DiffUnit =
   | 'ms'

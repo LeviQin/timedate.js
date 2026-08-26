@@ -3,6 +3,7 @@ import {
   getHour, transitionToSeconds, dateFormat, removeHMS, dateDiff,
   getFormat, getCurrentWeekDates, isLeapYear, validateTimeFormat,
 } from '../src/legacy';
+import { toDate } from '../src/parse';
 
 describe('legacy 兼容层（v2 API + bug 回归）', () => {
   it('getHour 小时差', () => {
@@ -59,8 +60,8 @@ describe('legacy 兼容层（v2 API + bug 回归）', () => {
 
   it('getCurrentWeekDates 以周一为一周起点', () => {
     const r = getCurrentWeekDates();
-    const start = new Date(r.start);
-    const end = new Date(r.end);
+    const start = toDate(r.start);
+    const end = toDate(r.end);
     expect(start.getDay()).toBe(1);
     expect(end.getDay()).toBe(0);
     expect(start <= end).toBe(true);

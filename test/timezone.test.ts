@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatInTimeZone } from '../src/timezone';
+import { formatInTimeZone, isValidTimeZone } from '../src/timezone';
 
 describe('formatInTimeZone 时区格式化', () => {
   it('UTC 时刻转上海时间', () => {
@@ -16,5 +16,11 @@ describe('formatInTimeZone 时区格式化', () => {
 
   it('非法时区名回退本地时区，不抛错', () => {
     expect(() => formatInTimeZone('2026-08-14T12:00:00Z', 'Not/AZone')).not.toThrow();
+  });
+
+  it('检查时区合法性并支持函数级英文 locale', () => {
+    expect(isValidTimeZone('Asia/Shanghai')).toBe(true);
+    expect(isValidTimeZone('Not/AZone')).toBe(false);
+    expect(formatInTimeZone('2026-08-14T12:00:00Z', 'Asia/Shanghai', 'ddd', 'en')).toBe('Fri');
   });
 });

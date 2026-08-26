@@ -1,6 +1,6 @@
 {
   "name": "timedate.js",
-  "version": "3.0.0",
+  "version": "3.2.0",
   "description": "零依赖的现代日期时间工具库：格式化、计算、日历、相对时间、i18n、时区",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -16,10 +16,18 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "sideEffects": false,
-  "repository": "https://github.com/muqin6610/timeDate",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeviQin/timedate.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LeviQin/timedate.js/issues"
+  },
+  "homepage": "https://github.com/LeviQin/timedate.js#readme",
   "keywords": [
     "time",
     "date",
@@ -39,7 +47,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+    "verify:exports": "node scripts/verify-exports.mjs",
+    "verify": "npm run typecheck && npm test && npm run build && npm run verify:exports && npm pack --dry-run",
+    "prepublishOnly": "npm run verify"
   },
   "engines": {
     "node": ">=18"

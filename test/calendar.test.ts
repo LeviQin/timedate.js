@@ -27,11 +27,30 @@ describe('日历工具', () => {
     expect(getDayOfYear('2026-01-01')).toBe(1);
     expect(getDayOfYear('2026-02-01')).toBe(32);
     expect(getDayOfYear('2026-12-31')).toBe(365);
+    expect(getDayOfYear('2024-12-31')).toBe(366);
   });
 
   it('getISOWeek（ISO 周四法则）', () => {
     expect(getISOWeek('2026-01-01')).toBe(1);
     expect(getISOWeek('2026-08-14')).toBe(33);
+    expect(getISOWeek('2021-01-01')).toBe(53);
+    expect(getISOWeek('2021-01-04')).toBe(1);
+  });
+
+  it('DST 日期仍按日历计算', () => {
+    expect(getDayOfYear('2024-03-10')).toBe(70);
+    expect(getDayOfYear('2024-03-11')).toBe(71);
+  });
+
+  it('非法月份返回 0', () => {
+    expect(daysInMonth(2026, 0)).toBe(0);
+    expect(daysInMonth(2026, 13)).toBe(0);
+  });
+
+  it('月历网格保留 0-99 年份', () => {
+    const grid = getMonthGrid(9, 2);
+    const firstDay = grid.flat().find((date) => date.getMonth() === 1 && date.getDate() === 1);
+    expect(firstDay?.getFullYear()).toBe(9);
   });
 
   it('getMonthGrid 6 行 × 7 列，首尾含占位日期', () => {

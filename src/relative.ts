@@ -1,6 +1,6 @@
-import type { DateInput, LocaleName } from './types';
+import type { DateInput } from './types';
 import { toDate } from './parse';
-import { getLocale } from './i18n';
+import { resolveLocale } from './i18n';
 import type { Locale } from './locale-types';
 
 const SEC = 1000;
@@ -27,6 +27,11 @@ const KEY_TO_NUM: Record<string, number> = {
   s: 0, m: 1, mm: 2, h: 1, hh: 2, d: 1, dd: 2, M: 1, MM: 2, y: 1, yy: 2,
 };
 
+export interface RelativeTimeOptions {
+  /** 为相对量输入和省略的 base 提供可控的当前时间 */
+  now?: Date | (() => Date);
+}
+
 function fillTemplate(template: string, num: number): string {
   return template.replace('%d', String(num));
 }
@@ -37,9 +42,18 @@ function fillTemplate(template: string, num: number): string {
  * @param base 基准时间，默认当前时间
  * @param locale 语言，默认全局语言
  */
-export function relativeTime(input: DateInput, base?: DateInput, locale?: LocaleName | Locale): string {
-  const loc: Locale = typeof locale === 'string' ? getLocale() : (locale ?? getLocale());
-  const diff = toDate(input).getTime() - toDate(base).getTime();
+export function relativeTime(
+  input: DateInput,
+  base?: DateInput,
+  locale?: string | Locale,
+  options: RelativeTimeOptions = {},
+): string {
+  const loc: Locale = resolveLocale(locale);
+  const parseOptions = { now: options.now };
+  const inputDate = toDate(input, parseOptions);
+  const baseDate = toDate(base, parseOptions);
+  if (Number.isNaN(inputDate.getTime()) || Number.isNaN(baseDate.getTime())) return 'Invalid Date';
+  const diff = inputDate.getTime() - baseDate.getTime();
   const abs = Math.abs(diff);
   const future = diff > 0;
 
@@ -68,10 +82,17 @@ function unitMs(key: string): number {
 export interface HumanizeOptions {
   /** 最多展示的单位个数，默认 1（只显示最大单位） */
   largest?: number;
-  locale?: LocaleName | Locale;
+  locale?: string | Locale;
 }
 
-const HUMANIZE_UNITS: ReadonlyArray<readonly [keyof Locale['humanize'], number]> = [
+export type DurationUnit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'ms';
+
+export interface DurationPart {
+  unit: DurationUnit;
+  value: number;
+}
+
+const HUMANIZE_UNITS: ReadonlyArray<readonly [DurationUnit, number]> = [
   ['year', 365 * DAY],
   ['month', MONTH],
   ['day', DAY],
@@ -88,19 +109,28 @@ const HUMANIZE_UNITS: ReadonlyArray<readonly [keyof Locale['humanize'], number]>
  */
 export function humanizeDuration(ms: number, options: HumanizeOptions = {}): string {
   const { largest = 1, locale } = options;
-  const loc: Locale = typeof locale === 'string' ? getLocale() : (locale ?? getLocale());
+  const loc: Locale = resolveLocale(locale);
+  if (!Number.isFinite(ms)) return 'Invalid Duration';
+  const parts = durationToParts(ms, largest);
+  if (parts.length === 0) return `0${loc.humanize.unitSeparator ?? ''}${loc.humanize.second(1)}`;
+  return parts
+    .map(({ unit, value }) => `${value}${loc.humanize.unitSeparator ?? ''}${loc.humanize[unit](value)}`)
+    .join(loc.humanize.separator ?? '');
+}
+
+/** 将时长拆成结构化单位，默认返回所有有值的单位。 */
+export function durationToParts(ms: number, largest = Number.POSITIVE_INFINITY): DurationPart[] {
+  if (!Number.isFinite(ms) || largest <= 0) return [];
   let rest = Math.abs(ms);
-  const parts: string[] = [];
+  const parts: DurationPart[] = [];
   for (const [unit, size] of HUMANIZE_UNITS) {
     if (parts.length >= largest) break;
-    const v = Math.floor(rest / size);
-    if (v > 0) {
-      parts.push(`${v}${loc.humanize[unit](v)}`);
-      rest -= v * size;
+    const value = Math.floor(rest / size);
+    if (value > 0) {
+      parts.push({ unit, value });
+      rest -= value * size;
     }
   }
-  if (parts.length === 0) {
-    return `0${loc.humanize.second(1)}`;
-  }
-  return parts.join('');
+  if (parts.length === 0) return [{ unit: 'second', value: 0 }];
+  return parts;
 }

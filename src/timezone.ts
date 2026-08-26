@@ -1,7 +1,7 @@
-import type { DateInput, DateParts, LocaleName } from './types';
+import type { DateInput, DateParts } from './types';
 import { toDate } from './parse';
 import { toParts, formatFromParts } from './format';
-import { getLocale } from './i18n';
+import { resolveLocale } from './i18n';
 import type { Locale } from './locale-types';
 
 /**
@@ -16,10 +16,11 @@ export function formatInTimeZone(
   input: DateInput,
   timeZone: string,
   template = 'YYYY-MM-DD HH:mm:ss',
-  locale?: LocaleName | Locale,
+  locale?: string | Locale,
 ): string {
   const date = toDate(input);
-  const loc: Locale = typeof locale === 'string' ? getLocale() : (locale ?? getLocale());
+  if (Number.isNaN(date.getTime())) return 'Invalid Date';
+  const loc: Locale = resolveLocale(locale);
   try {
     const dtf = new Intl.DateTimeFormat('en-US', {
       timeZone,
@@ -44,5 +45,15 @@ export function formatInTimeZone(
   } catch {
     // 时区名非法时回退本地时区
     return formatFromParts(toParts(date), template, loc);
+  }
+}
+
+/** 判断运行环境是否支持指定的 IANA 时区名。 */
+export function isValidTimeZone(timeZone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone }).format();
+    return true;
+  } catch {
+    return false;
   }
 }

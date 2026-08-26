@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toDate, isValid } from '../src/parse';
+import { fromUnixSeconds, toDate, toUnixSeconds, isValid } from '../src/parse';
 
 describe('toDate 解析', () => {
   it('Date 输入会复制，不引用原对象', () => {
@@ -59,5 +59,23 @@ describe('toDate 解析', () => {
     expect(isValid('not-a-date')).toBe(false);
     expect(isValid(new Date('xx'))).toBe(false);
     expect(isValid({} as never)).toBe(false);
+  });
+
+  it('已识别格式严格拒绝日期溢出和多余后缀', () => {
+    expect(isValid('2026-02-31')).toBe(false);
+    expect(isValid('2026-13-01')).toBe(false);
+    expect(isValid('2026年8月14日abc')).toBe(false);
+  });
+
+  it('支持注入当前时间与显式空值策略', () => {
+    const now = new Date(2026, 7, 14, 9, 0, 0);
+    expect(toDate('14:30', { now }).getTime()).toBe(new Date(2026, 7, 14, 14, 30).getTime());
+    expect(toDate('2d', { now }).getDate()).toBe(16);
+    expect(isValid(null, { empty: 'invalid' })).toBe(false);
+  });
+
+  it('提供 Unix 秒时间戳转换', () => {
+    expect(fromUnixSeconds(0).getTime()).toBe(0);
+    expect(toUnixSeconds(new Date(1_700_000_000_999))).toBe(1_700_000_000);
   });
 });

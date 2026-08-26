@@ -19,4 +19,10 @@ describe('validateTimeFormat 格式校验', () => {
     expect(validateTimeFormat('2026-08-14 09:05', 'YYYY-MM-DD HH:mm')).toBe(true);
     expect(validateTimeFormat('2026-08-14 09:05:03', 'YYYY-MM-DD HH:mm')).toBe(false);
   });
+
+  it('支持完整 token、转义和真实日历日期校验', () => {
+    expect(validateTimeFormat('2026-08-14 03:05:04 下午', 'YYYY-MM-DD hh:mm:ss A')).toBe(true);
+    expect(validateTimeFormat('2026-02-29', 'YYYY-MM-DD')).toBe(false);
+    expect(validateTimeFormat('YYYY-2026', '[YYYY]-YYYY')).toBe(true);
+  });
 });

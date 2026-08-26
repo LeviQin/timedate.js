@@ -1,6 +1,6 @@
-import type { DateInput, DateParts, LocaleName } from './types';
+import type { DateInput, DateParts } from './types';
 import { toDate } from './parse';
-import { getLocale } from './i18n';
+import { getLocale, resolveLocale } from './i18n';
 import type { Locale } from './locale-types';
 
 /**
@@ -46,8 +46,8 @@ export function formatFromParts(parts: DateParts, template: string, locale: Loca
     ss: pad(parts.seconds),
     s: String(parts.seconds),
     SSS: pad(parts.milliseconds, 3),
-    SS: pad(parts.milliseconds),
-    S: String(parts.milliseconds),
+    SS: pad(parts.milliseconds, 3).slice(0, 2),
+    S: String(pad(parts.milliseconds, 3)[0]),
     A: locale.meridiem[parts.hours >= 12 ? 1 : 0] ?? '',
     a: (locale.meridiem[parts.hours >= 12 ? 1 : 0] ?? '').toLowerCase(),
     Q: String(parts.quarter),
@@ -68,16 +68,8 @@ export function formatFromParts(parts: DateParts, template: string, locale: Loca
  * @param locale 语言，默认全局语言
  * @example format('2026-08-14', 'YYYY年MM月DD日 dddd') // '2026年08月14日 星期五'
  */
-export function format(input: DateInput, template = 'YYYY-MM-DD HH:mm:ss', locale?: LocaleName | Locale): string {
-  return formatFromParts(toParts(toDate(input)), template, resolveLocale(locale));
-}
-
-function resolveLocale(locale?: LocaleName | Locale): Locale {
-  if (!locale) return getLocale();
-  if (typeof locale === 'string') {
-    const loaded = getLocale();
-    // 仅当名称匹配时使用，否则回退全局
-    return loaded.name === locale ? loaded : getLocale();
-  }
-  return locale;
+export function format(input: DateInput, template = 'YYYY-MM-DD HH:mm:ss', locale?: string | Locale): string {
+  const date = toDate(input);
+  if (Number.isNaN(date.getTime())) return 'Invalid Date';
+  return formatFromParts(toParts(date), template, resolveLocale(locale));
 }

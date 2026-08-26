@@ -1,6 +1,6 @@
 # timedate.js
 
-零依赖的现代日期时间工具库。TypeScript 编写，支持 ESM / CJS 双格式，tree-shaking 友好，保留 v2 全部 API。
+零依赖的现代日期时间工具库。TypeScript 编写，支持 ESM / CJS 双格式，tree-shaking 友好，当前版本为 v3.2，保留 v2 全部 API。
 
 - 解析：ISO 8601 / `YYYY-MM-DD HH:mm:ss` / 中文格式 / 相对量（`2d`、`-3h`）
 - 格式化：模板 token（`YYYY年MM月DD日 dddd`）+ 中文/英文语言包
@@ -28,7 +28,7 @@ import timedate from 'timedate.js'
 format('2026-08-14', 'YYYY年MM月DD日 dddd') // '2026年08月14日 星期五'
 addDays('2026-08-14', 7)                    // Date
 diff('2026-08-14', '2026-08-01', 'day')     // 13
-relativeTime('2026-08-01')                  // '14天前'
+relativeTime('2026-08-01', '2026-08-14')    // '13天前'
 ```
 
 CommonJS：
@@ -43,10 +43,18 @@ const { format } = require('timedate.js')
 
 | API | 说明 |
 | --- | --- |
-| `parse(input)` / `toDate(input)` | 解析任意输入为 Date，`Date` 输入会复制（不可变） |
+| `parse(input, options)` / `toDate(input, options)` | 解析任意输入为 Date，`Date` 输入会复制（不可变） |
 | `isValid(input)` | 是否为合法日期 |
 
-支持的输入：`Date`、毫秒时间戳、`'2026-08-14'`、`'2026-08-14 09:05:03'`、`'2026/08/14'`、`'2026年8月14日'`、`'09:05:03'`（补当天）、`'2d'` / `'-3h'` 相对量、RFC 2822（走原生解析）。
+支持的输入：`Date`、毫秒时间戳、`'2026-08-14'`、`'2026-08-14 09:05:03'`、`'2026/08/14'`、`'2026年8月14日'`、`'09:05:03'`（补当天）、`'2d'` / `'-3h'` 相对量、RFC 2822（走原生解析）。已识别格式会严格拒绝不存在的日期，例如 `2026-02-31`。
+
+数字输入统一按毫秒处理；Unix 秒时间戳请使用 `fromUnixSeconds()` / `toUnixSeconds()`。默认情况下 `null`、`undefined` 和空字符串表示当前时间；需要严格空值校验时使用 `toDate(value, { empty: 'invalid' })`。相对量和纯时间也可以注入当前时间：
+
+```js
+const now = new Date('2026-08-14T09:00:00')
+toDate('2d', { now })
+toDate('14:30', { now })
+```
 
 ### 格式化
 
@@ -62,7 +70,7 @@ Token 一览：
 | `MM` `M` | 08 / 8 | `hh` `h` | 09 / 9（12 小时制） |
 | `DD` `D` | 14 / 14 | `mm` `m` | 05 / 5 |
 | `dddd` `ddd` | 星期五 / 周五 | `ss` `s` | 03 / 3 |
-| `d` | 5（0-6，0=周日） | `S` `SS` `SSS` | 毫秒 |
+| `d` | 5（0-6，0=周日） | `S` `SS` `SSS` | 4 / 45 / 456（十分之一秒 / 百分之一秒 / 毫秒） |
 | `A` `a` | 下午 / pm | `Q` | 季度 1-4 |
 
 非 token 字符原样输出；用 `[ ]` 转义，如 `'[YYYY]年'` 输出 `'YYYY年'`。
@@ -102,9 +110,11 @@ getMonthGrid(2026, 8, 1)      // 6×7 月历网格（Date[][], 首尾含占位�
 ### 人性化
 
 ```js
-relativeTime('2026-08-01')                        // '14天前'（Intl.RelativeTimeFormat 同款阈值）
+relativeTime('2026-08-01', '2026-08-14')          // '13天前'（Intl.RelativeTimeFormat 同款阈值）
 humanizeDuration(9_000_000)                       // '2小时'（largest 默认 1）
 humanizeDuration(9_000_000, { largest: 2 })       // '2小时30分钟'
+humanizeDuration(90_000, { largest: 2, locale: 'en' }) // '1 minute 30 seconds'
+durationToParts(9_000_000, 2)                      // [{ unit: 'hour', value: 2 }, ...]
 ```
 
 ### 时区
@@ -112,13 +122,20 @@ humanizeDuration(9_000_000, { largest: 2 })       // '2小时30分钟'
 ```js
 formatInTimeZone('2026-08-14T12:00:00Z', 'Asia/Shanghai')            // '2026-08-14 20:00:00'
 formatInTimeZone('2026-08-14T12:00:00Z', 'America/New_York', 'YYYY/MM/DD HH:mm') // '2026/08/14 08:00'
+isValidTimeZone('Asia/Shanghai') // true
 ```
+
+非法时区名为兼容旧版本会回退到本地时区；发布前可先用 `isValidTimeZone()` 检查输入。
 
 ### i18n
 
 ```js
-setLocale('en') / getLocale()   // 内置 zh / en；可传入自定义 Locale 对象
+setLocale('en') / getLocale()   // 内置 zh / en
+defineLocale(customLocale)      // 注册自定义语言包
+format(date, 'dddd', 'en')       // 函数级选择语言，不修改全局状态
 ```
+
+`setLocale()` 会修改全局默认语言；SSR 或并发场景优先使用函数级 locale 参数。自定义语言包的 `humanize.separator` 控制多个时长单位之间的分隔符，`humanize.unitSeparator` 控制数值与单位之间的分隔符。
 
 ### v2 兼容 API（历史 bug 已修复）
 
@@ -137,8 +154,9 @@ setLocale('en') / getLocale()   // 内置 zh / en；可传入自定义 Locale �
 
 ```shell
 npm run typecheck   # tsc --noEmit
-npm test            # vitest（71 用例）
+npm test            # vitest（81 用例）
 npm run build       # tsup：ESM + CJS + d.ts
+npm run verify      # 类型检查、测试、构建和 npm pack 检查
 ```
 
 ## 目录结构

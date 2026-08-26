@@ -1,10 +1,10 @@
-import type { LocaleName } from './types';
 import type { Locale } from './locale-types';
 
-const locales: Record<string, Locale> = {};
+const locales = new Map<string, Locale>();
 
-function defineLocale(locale: Locale) {
-  locales[locale.name] = locale;
+/** 注册一个可供函数级 locale 参数和 setLocale 使用的语言包。 */
+export function defineLocale(locale: Locale): void {
+  locales.set(locale.name, locale);
 }
 
 defineLocale({
@@ -30,6 +30,8 @@ defineLocale({
     },
   },
   humanize: {
+    separator: '',
+    unitSeparator: '',
     year: () => '年',
     month: () => '个月',
     day: () => '天',
@@ -63,6 +65,8 @@ defineLocale({
     },
   },
   humanize: {
+    separator: ' ',
+    unitSeparator: ' ',
     year: (n) => (n === 1 ? 'year' : 'years'),
     month: (n) => (n === 1 ? 'month' : 'months'),
     day: (n) => (n === 1 ? 'day' : 'days'),
@@ -73,17 +77,31 @@ defineLocale({
   },
 });
 
-let currentLocale: Locale = locales['zh'] ?? locales['en']!;
+let currentLocale: Locale = locales.get('zh') ?? locales.get('en')!;
 
-/** 切换全局语言，返回是否成功 */
-export function setLocale(name: LocaleName | string): boolean {
-  const next = locales[name];
+/** 切换全局语言，返回是否成功；传入 Locale 会先注册再切换。 */
+export function setLocale(locale: string | Locale): boolean {
+  if (typeof locale !== 'string') {
+    defineLocale(locale);
+    currentLocale = locale;
+    return true;
+  }
+  const next = locales.get(locale);
   if (!next) return false;
   currentLocale = next;
   return true;
 }
 
-/** 获取当前语言 */
-export function getLocale(): Locale {
-  return currentLocale;
+/** 获取当前语言，传入名称时获取已注册的指定语言。 */
+export function getLocale(): Locale;
+export function getLocale(name: string): Locale | undefined;
+export function getLocale(name?: string): Locale | undefined {
+  return name === undefined ? currentLocale : locales.get(name);
+}
+
+/** 解析函数级语言参数；未知名称回退到当前全局语言。 */
+export function resolveLocale(locale?: string | Locale): Locale {
+  if (!locale) return currentLocale;
+  if (typeof locale !== 'string') return locale;
+  return locales.get(locale) ?? currentLocale;
 }

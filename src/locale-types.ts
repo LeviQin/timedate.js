@@ -25,6 +25,10 @@ export interface Locale {
     templates: RelativeTemplate;
   };
   humanize: {
+    /** 多个时长单位之间的分隔符，默认空串 */
+    separator?: string;
+    /** 数值与单位名称之间的分隔符，默认空串 */
+    unitSeparator?: string;
     year: (n: number) => string;
     month: (n: number) => string;
     day: (n: number) => string;

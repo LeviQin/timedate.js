@@ -17,6 +17,7 @@ const fmtTime = (d: Date) => formatFromParts(toParts(d), 'HH:mm:ss');
 /**
  * 计算两个时间之间的小时差（向下取整）
  * 支持 'YYYY-MM-DD HH:mm:ss' 或 'HH:mm:ss'（缺日期补当天）
+ * @deprecated 使用 diff(time1, time2, 'hour')。
  */
 export function getHour(time1: string, time2: string): number {
   const d1 = toDate(time1);
@@ -27,6 +28,7 @@ export function getHour(time1: string, time2: string): number {
 /**
  * 获取一个时间的总秒数，支持 'HH:mm' 与 'HH:mm:ss'
  * v2 bug 修复：原来只解析前两段，秒会被静默丢弃
+ * @deprecated 使用 parse 或自定义时间输入处理。
  */
 export function transitionToSeconds(timeString: string): number {
   const m = /^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/.exec(String(timeString).trim());
@@ -38,6 +40,7 @@ const DATE_FORMAT_KEYS = ['ymdhms', 'ymdhm', 'ymd', 'md', 'hms', 'hm', 'ymdhmsCN
 
 /**
  * 日期格式化，返回包含多种格式的对象（无效输入返回原始值，保持 v2 行为）
+ * @deprecated 使用 format() 按需格式化。
  */
 export function dateFormat(inputDate: DateInput): Record<(typeof DATE_FORMAT_KEYS)[number], string | DateInput> {
   const d = toDate(inputDate);
@@ -60,7 +63,7 @@ export function dateFormat(inputDate: DateInput): Record<(typeof DATE_FORMAT_KEY
   };
 }
 
-/** 日期去除时分秒，返回 'YYYY-MM-DD' */
+/** 日期去除时分秒，返回 'YYYY-MM-DD'。@deprecated 使用 format(input, 'YYYY-MM-DD')。 */
 export function removeHMS(dateString: string): string {
   const d = toDate(dateString);
   return isValid(d) ? fmtDate(d) : '';
@@ -70,6 +73,7 @@ export function removeHMS(dateString: string): string {
  * 返回两个日期相差的天数
  * v2 修复：改用 Date.UTC 计算，规避夏令时导致的 ±1 天误差
  * @returns { days, daysCA } days 不含今天；daysCA 含今天
+ * @deprecated 使用 diff(date1, date2, 'day')。
  */
 export function dateDiff(date1: DateInput, date2: DateInput): { days: number; daysCA: number } {
   const d1 = toDate(date1);
@@ -82,6 +86,7 @@ export function dateDiff(date1: DateInput, date2: DateInput): { days: number; da
 
 /**
  * 获取一个日期的所有信息（week: 1-7，周日为 7，保持 v2 语义）
+ * @deprecated 使用 toParts() 和 format()。
  */
 export function getFormat(date: DateInput): Record<string, string | number> {
   const myDate = toDate(date);
@@ -115,7 +120,7 @@ export function getFormat(date: DateInput): Record<string, string | number> {
   };
 }
 
-/** 获取当前周的起始（周一）和结束（周日）日期 */
+/** 获取当前周的起始（周一）和结束（周日）日期。@deprecated 使用 startOf(now, 'week') 和 endOf(now, 'week')。 */
 export function getCurrentWeekDates(): { start: string; end: string } {
   const now = new Date();
   return {

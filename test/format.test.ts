@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { format, formatFromParts, toParts } from '../src/format';
-import { setLocale, getLocale } from '../src/i18n';
+import { defineLocale, setLocale, getLocale } from '../src/i18n';
 
 describe('format 模板格式化', () => {
   it('默认模板输出完整日期时间', () => {
@@ -18,6 +18,7 @@ describe('format 模板格式化', () => {
 
   it('季度与毫秒', () => {
     expect(format('2026-08-14', 'Q季度 SSS毫秒')).toBe('3季度 000毫秒');
+    expect(format('2026-08-14 00:00:00.456', 'S SS SSS')).toBe('4 45 456');
   });
 
   it('转义字符 [ ] 原样输出', () => {
@@ -45,6 +46,27 @@ describe('format 模板格式化', () => {
     setLocale('en');
     expect(format('2026-08-14', 'YYYY-MM-DD ddd')).toBe('2026-08-14 Fri');
     setLocale('zh');
+    expect(format('2026-08-14', 'ddd', 'en')).toBe('Fri');
     expect(getLocale().name).toBe('zh');
+  });
+
+  it('支持注册自定义 locale', () => {
+    defineLocale({
+      name: 'test',
+      weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+      weekdaysShort: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+      meridiem: ['AM', 'PM'],
+      relativeTime: {
+        future: (s) => `+${s}`,
+        past: (s) => `-${s}`,
+        templates: { s: 'sec', m: 'min', mm: '%d min', h: 'hour', hh: '%d hours', d: 'day', dd: '%d days', M: 'month', MM: '%d months', y: 'year', yy: '%d years' },
+      },
+      humanize: {
+        year: () => 'y', month: () => 'mo', day: () => 'd', hour: () => 'h',
+        minute: () => 'm', second: () => 's', ms: () => 'ms',
+      },
+    });
+    expect(format('2026-08-14 15:00:00', 'ddd A', 'test')).toBe('Fr PM');
+    expect(getLocale('test')?.name).toBe('test');
   });
 });
